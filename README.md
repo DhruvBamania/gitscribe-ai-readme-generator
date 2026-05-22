@@ -24,6 +24,7 @@ GitScribe is a SaaS application designed to bridge the gap between software engi
 - [Usage Workflow](#-usage-workflow)
 - [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
+- [Contact](#contact)
 - [License](#-license)
 
 ---
@@ -144,6 +145,15 @@ php artisan serve
 3. Commit your Changes (```git commit -m 'Add some AmazingFeature'```)
 4. Push to the Branch (```git push origin feature/AmazingFeature```)
 5. Open a Pull Request
+
+---
+
+## Contact
+
+**Author: Dhruv Bamania**  
+📧 Email: [dhruvbamania02@gmail.com]  
+🔗 GitHub: [https://github.com/DhruvBamania]  
+💼 LinkedIn: [www.linkedin.com/in/dhruvbamania]  
 
 ---
 

@@ -1,59 +1,151 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
+  
+# ✍️ GitScribe
+**Automated, AI-Powered Documentation for GitHub Repositories**
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com)
+[![Gemini API](https://img.shields.io/badge/Gemini_AI-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-## About Laravel
+</div>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📖 Overview
+GitScribe is a SaaS application designed to bridge the gap between software engineering and documentation. By utilizing the GitHub REST API and Google's Gemini AI, GitScribe analyzes your repository's context and automatically generates structured, high-quality `README.md` files. The generated documentation is then seamlessly pushed back to your repository via an automated Pull Request.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📑 Table of Contents
+- [Features](#-features)
+- [System Architecture](#-system-architecture)
+- [Tech Stack](#-tech-stack)
+- [Prerequisites](#-prerequisites)
+- [Installation & Setup](#-installation--setup)
+- [Configuration Guide](#-configuration-guide)
+- [Usage Workflow](#-usage-workflow)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## ✨ Features
+* **Secure Authentication:** Implements OAuth 2.0 via Laravel Socialite for secure, passwordless GitHub login.
+* **Context-Aware AI Generation:** Feeds repository metadata (languages, file structures, descriptions) into Google Gemini to generate highly accurate documentation.
+* **Automated Git Workflow:** Uses the GitHub REST API to programmatically create a new branch, author the commit, and open a Pull Request without manual intervention.
+* **Responsive UI:** A clean, intuitive dashboard built with Bootstrap, keeping the codebase manageable and fast.
+* **Cloud-Ready:** Architecture optimized for deployment on environments like Oracle Cloud or standard VPS hosting.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🏗 System Architecture
+1. **Authentication:** User logs in via GitHub OAuth. An access token is securely stored in the session.
+2. **Data Retrieval:** GitScribe fetches the user's repository list and relevant metadata using the GitHub REST API.
+3. **AI Processing:** Selected repository data is structured into an optimized prompt and sent to the Gemini AI API.
+4. **Git Operations:**
+   - Fetches the SHA of the main branch.
+   - Creates a new branch (e.g., `gitscribe/readme-update`).
+   - Commits the AI-generated Markdown file.
+   - Opens a Pull Request against the main branch.
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 💻 Tech Stack
+* **Framework:** Laravel 12
+* **Language:** PHP 8.2+
+* **Database:** MySQL
+* **Frontend:** Laravel Blade, Bootstrap 5
+* **Integrations:** 
+  * Laravel Socialite (OAuth)
+  * GitHub REST API v3
+  * Google Gemini API
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## ⚙️ Prerequisites
+Ensure your local machine or server meets the following requirements:
+* [PHP 8.2+](https://www.php.net/downloads)
+* [Composer](https://getcomposer.org/)
+* [MySQL](https://www.mysql.com/) or MariaDB
+* Node.js & NPM (for frontend asset compilation)
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Installation & Setup
 
-## Code of Conduct
+**1. Clone the repository**
+```bash
+git clone https://github.com/DhruvBamania/gitscribe-ai-readme-generator.git
+cd gitscribe
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**2. Install PHP and Node dependencies**
+```bash
+composer install
+npm install
+npm run build
+```
 
-## Security Vulnerabilities
+**3. Configure the environment**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**4. Set up the database**
 
-## License
+Update your .env file with your MySQL credentials, then run the migrations:
+```bash
+php artisan migrate
+```
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🔑 Configuration Guide
+To run GitScribe locally, you need API keys from GitHub and Google. Add these to your .env file:
+
+**GitHub OAuth App Setup**
+1. Go to your GitHub Settings > Developer Settings > OAuth Apps.
+2. Click New OAuth App.
+3. Set the Homepage URL to ```http://localhost:8000 ```.
+4. Set the Authorization callback URL to ```http://localhost:8000/auth/github/callback```.
+5. Generate a client secret and add both keys to your ```.env```:
+```bash
+GITHUB_CLIENT_ID=your_client_id_here
+GITHUB_CLIENT_SECRET=your_client_secret_here
+GITHUB_REDIRECT_URI=http://localhost:8000/auth/github/callback
+```
+
+---
+
+## Google Gemini API Setup
+1. Visit Google AI Studio to get an API key.
+2. Add it to your ```.env```:
+```bash
+GEMINI_API_KEY=your_gemini_api_key_here
+```
+
+---
+
+## 🛠 Usage Workflow
+1. Start the Laravel development server:
+```bash
+php artisan serve
+```
+2. Navigate to ```http://localhost:8000``` and click Sign in with GitHub.
+3. Authorize the application to read and write to your repositories.
+4. Select a repository from your dashboard.
+5. Click Generate README.
+6. Review the success message, navigate to your GitHub repository, and review the newly created Pull Request!
+
+---
+
+## 🤝 Contributing
+1. Fork the Project
+2. Create your Feature Branch (```git checkout -b feature/AmazingFeature```)
+3. Commit your Changes (```git commit -m 'Add some AmazingFeature'```)
+4. Push to the Branch (```git push origin feature/AmazingFeature```)
+5. Open a Pull Request
+
+---
+
+## 📝 License 
+Distributed under the MIT License. See LICENSE for more information.

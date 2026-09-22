@@ -34,11 +34,13 @@ class GithubController extends Controller
 
             Auth::login($user);
 
+            
             return redirect('/dashboard');
             
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('GitHub Auth Failed: ' . $e->getMessage());
-            return redirect('/')->with('error', 'Failed to authenticate with GitHub.');
+            // Log the error and return it so we can see exactly what failed on Render
+            \Illuminate\Support\Facades\Log::error('GitHub Auth Failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return dd('GitHub Auth Error: ' . $e->getMessage());
         }
     }
 }

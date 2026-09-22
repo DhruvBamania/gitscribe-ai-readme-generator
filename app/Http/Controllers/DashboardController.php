@@ -34,8 +34,26 @@ class DashboardController extends Controller
             ->get("https://api.github.com/repos/{$owner}/{$repo}/contents");
         
         $files = [];
+        $fileContents = [];
+        $keyFiles = ['package.json', 'composer.json', 'Dockerfile', 'docker-compose.yml', 'requirements.txt', 'pom.xml', 'go.mod'];
+
         if ($repoResponse->successful()) {
-            $files = collect($repoResponse->json())->pluck('name')->toArray();
+            $items = $repoResponse->json();
+            foreach ($items as $item) {
+                $files[] = $item['name'];
+                
+                // Fetch deep context for key files
+                if (in_array($item['name'], $keyFiles) && $item['type'] === 'file') {
+                    $contentResponse = \Illuminate\Support\Facades\Http::withToken($user->github_token)
+                        ->withHeaders(['Accept' => 'application/vnd.github.v3.raw'])
+                        ->get("https://api.github.com/repos/{$owner}/{$repo}/contents/{$item['name']}");
+                        
+                    if ($contentResponse->successful()) {
+                        // Limit to 1500 chars to save tokens and prevent huge prompts
+                        $fileContents[$item['name']] = \Illuminate\Support\Str::limit($contentResponse->body(), 1500);
+                    }
+                }
+            }
         }
 
         $metaResponse = Http::withToken($user->github_token)
@@ -47,7 +65,8 @@ class DashboardController extends Controller
             $meta['name'],
             $meta['description'] ?? 'A professional web project.',
             $meta['language'] ?? 'Unknown',
-            $files
+            $files,
+            $fileContents
         );
 
         return view('preview', [

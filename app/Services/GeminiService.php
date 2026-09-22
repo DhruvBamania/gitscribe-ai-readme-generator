@@ -16,12 +16,21 @@ class GeminiService
         $this->apiUrl = config('services.gemini.url');
     }
 
-    public function generateReadme($repoName, $description, $language, $files = [])
+    public function generateReadme($repoName, $description, $language, $files = [], $fileContents = [])
     {
         $fileList = implode(', ', $files);
 
         $generationDate = now()->format('d-m-Y');
         $generationLocation = 'India';
+
+        $deepContextBlock = "";
+        if (!empty($fileContents)) {
+            $deepContextBlock = "\n\nDeep Context (Raw File Contents for Analysis):\n";
+            foreach ($fileContents as $fileName => $content) {
+                $deepContextBlock .= "--- {$fileName} ---\n```\n{$content}\n```\n\n";
+            }
+            $deepContextBlock .= "Please use the Deep Context above to extract precise dependencies, exact installation commands (like npm install or composer install), and architecture details for the README.\n";
+        }
 
         $prompt = "Act as an Expert Developer Advocate and Technical Writer. 
         I need a professional, highly readable README.md file for a GitHub project. The Markdown should feel like a premium SaaS product or a top-tier open-source library.
@@ -30,7 +39,7 @@ class GeminiService
         - Project Name: {$repoName}
         - Description: {$description}
         - Main Language: {$language}
-        - Key Files/Directories: {$fileList}
+        - Key Files/Directories: {$fileList}{$deepContextBlock}
         
         Formatting & UI Requirements:
         1. Hero Section: Start with an `<h1>` header, centered text, and a concise 1-sentence catchphrase.

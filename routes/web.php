@@ -31,3 +31,8 @@ Route::get('/generate-readme/{owner}/{repo}', [DashboardController::class, 'gene
     ->name('readme.generate');
 
 Route::post('/push-readme', [PullRequestController::class, 'push'])->name('readme.push')->middleware('auth');
+
+Route::get('/run-migrations-temp', function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return 'Migrations ran successfully! Output: <br><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
+});

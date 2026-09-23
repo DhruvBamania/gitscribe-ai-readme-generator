@@ -10,7 +10,7 @@
         <div class="text-muted d-flex align-items-center"> 
             <i class="fa-solid fa-user-circle fs-4 me-2"></i>
             <span>{{ auth()->user()->name }}</span>
-        </div>
+        </div> 
     </div>
 
     <p class="text-muted mb-4">Select a repository below to automatically generate a professional README.md.</p>

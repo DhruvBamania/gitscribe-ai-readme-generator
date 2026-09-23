@@ -16,7 +16,7 @@ class PullRequestController extends Controller
         
         $content = base64_decode($request->input('content')); 
         
-        $token = $user->github_token;
+        $token = $user->github_token; 
         $baseUrl = "https://api.github.com/repos/{$owner}/{$repo}";
 
         try {

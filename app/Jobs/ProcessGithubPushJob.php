@@ -17,6 +17,8 @@ class ProcessGithubPushJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 120; // Allow 2 minutes for API processing
+    public $tries = 5; // Retry up to 5 times if Gemini is busy
+    public $backoff = [60, 300, 600]; // Wait 1min, then 5min, then 10min between retries
 
     protected $webhook;
     protected $payload;
@@ -83,6 +85,10 @@ class ProcessGithubPushJob implements ShouldQueue
 
         } catch (\Exception $e) {
             Log::error("Failed to process Github Push Job: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            
+            // Re-throw the exception so Laravel's queue system knows the job failed
+            // and can automatically retry it based on $tries and $backoff
+            throw $e;
         }
     }
 }

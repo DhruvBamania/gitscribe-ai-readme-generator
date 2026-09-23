@@ -118,6 +118,6 @@ class GeminiService
         $errorBody = $response->body();
         \Illuminate\Support\Facades\Log::error('Gemini API Error in generateReadmeFromDiff: ' . $errorBody);
 
-        return "Failed to generate updated README. Please try again. \n\nAPI Error Details:\n```json\n" . $errorBody . "\n```";
+        throw new \Exception("Gemini API Error: " . $errorBody);
     }
 }

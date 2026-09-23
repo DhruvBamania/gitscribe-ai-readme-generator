@@ -75,30 +75,23 @@ class GeminiService
         $prompt = "Act as an Expert Developer Advocate and Technical Writer. 
         You are managing the documentation for the GitHub project: {$repoName}.
         
-        The developer just pushed new code. Below is the ORIGINAL README.md and the DIFF of the recent code changes.
+        Below is the ORIGINAL README.md and the DIFF of the recent code changes.
         
-        Task: You must output the EXACT ORIGINAL README.md, but intelligently inject updates to reflect the new features, dependencies, or architectural changes introduced in the DIFF.
+        Task: Rewrite the entire README file exactly as the original, but seamlessly incorporate the new changes, features, or dependencies shown in the DIFF.
         
         CRITICAL RULES:
-        1. DO NOT rewrite the entire document from scratch.
-        2. PRESERVE all existing badges, logos, HTML blocks, alignment tags (`<div align=\"center\">`), and formatting.
-        3. PRESERVE all existing sections (Tech Stack, Installation, etc.) unless they are explicitly removed or completely changed in the diff.
-        4. ONLY add or modify text/code blocks where the diff indicates a new feature, a changed dependency, or a new installation step.
-        5. If the diff is minor (e.g., a typo fix or hidden logic change), return the ORIGINAL README exactly as it is.
+        1. Keep the exact same structure, badges, logos, and tone as the original README.
+        2. Do NOT wrap your response in ```markdown ... ``` blocks. Return ONLY the raw markdown text.
         
         ### ORIGINAL README ###
-        ```markdown
         {$oldReadme}
-        ```
         
         ### RECENT CODE CHANGES (DIFF) ###
         ```diff
         {$diff}
-        ```
-        
-        CRITICAL: Output ONLY the raw updated Markdown code. Do not include any conversational filler before or after the code block.";
+        ```";
 
-        $response = Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = \Illuminate\Support\Facades\Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [
                 [
                     'parts' => [
@@ -109,7 +102,13 @@ class GeminiService
         ]);
 
         if ($response->successful()) {
-            return $response->json()['candidates'][0]['content']['parts'][0]['text'];
+            $text = $response->json()['candidates'][0]['content']['parts'][0]['text'];
+            
+            // Robustly strip ```markdown and ``` if the AI ignores the prompt
+            $text = preg_replace('/^```(?:markdown)?\s*/i', '', $text);
+            $text = preg_replace('/\s*```$/', '', $text);
+            
+            return $text;
         }
 
         return "Failed to generate updated README. Please try again.";

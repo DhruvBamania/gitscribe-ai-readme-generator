@@ -61,14 +61,7 @@ class ProcessGithubPushJob implements ShouldQueue
 
             // 2. Fetch the old README
             $readmeResponse = $githubService->getFileContent($token, $owner, $repo, 'README.md');
-            
-            $oldReadme = '';
-            if ($readmeResponse) {
-                $readmeData = json_decode($readmeResponse, true);
-                if (isset($readmeData['content'])) {
-                    $oldReadme = base64_decode($readmeData['content']);
-                }
-            }
+            $oldReadme = $readmeResponse ? $readmeResponse : '';
 
             // If there's no old README, we can't really "update" it via diff intelligently, 
             // but we'll let Gemini try or just return. For now, let's proceed.

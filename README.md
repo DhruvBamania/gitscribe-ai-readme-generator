@@ -40,7 +40,7 @@ This project aims to streamline the documentation process, allowing developers t
 
 ## Features
 
--   **AI-Powered Generation**: Leverages advanced AI models to understand project context and generate relevant, high-quality `README.md` content.
+-   **AI-Powered Generation**: Leverages advanced AI models, including Google Gemini, to understand project context and generate highly relevant, comprehensive, and high-quality `README.md` content, ensuring detailed documentation even for complex projects.
 -   **GitHub PR Integration**: Seamlessly integrates with GitHub Pull Requests to automatically propose README updates or creations.
 -   **Laravel Foundation**: Built on the robust and scalable Laravel 12 framework, ensuring reliability and maintainability.
 -   **Dynamic Content**: Generates sections like installation guides, tech stacks, and usage instructions based on project analysis.
@@ -133,7 +133,7 @@ The easiest way to get started is by using the provided `setup` script, which ha
     DB_PASSWORD=
 
     # AI Service Configuration
-    AI_SERVICE_PROVIDER=claude # or openai, etc.
+    AI_SERVICE_PROVIDER=gemini # or claude, openai, etc.
     AI_SERVICE_KEY=your_ai_service_key
 
     # GitHub OAuth (for Socialite)
@@ -185,7 +185,7 @@ GitScribe includes a `Dockerfile` for easy deployment in a containerized environ
 All core application configuration is managed via environment variables in the `.env` file. Key configurations include:
 
 -   **Database**: `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
--   **AI Services**: `AI_SERVICE_PROVIDER`, `AI_SERVICE_KEY`. These will point to your chosen AI model provider (e.g., OpenAI, Claude).
+-   **AI Services**: `AI_SERVICE_PROVIDER`, `AI_SERVICE_KEY`. These will point to your chosen AI model provider (e.g., OpenAI, Claude, **Gemini**).
 -   **GitHub Integration**: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI` for OAuth authentication and interacting with the GitHub API.
 
 > **Important**: Never commit your `.env` file to version control. Use `.env.example` as a template and populate `.env` on your deployment target.

@@ -77,8 +77,14 @@ class GeminiService
         
         The developer just pushed new code. Below is the ORIGINAL README.md and the DIFF of the recent code changes.
         
-        Task: Update the ORIGINAL README.md to reflect the new features, dependencies, or architectural changes introduced in the DIFF. 
-        Keep the overall style, tone, and existing valid information intact. Only modify or add sections that are relevant to the new changes.
+        Task: You must output the EXACT ORIGINAL README.md, but intelligently inject updates to reflect the new features, dependencies, or architectural changes introduced in the DIFF.
+        
+        CRITICAL RULES:
+        1. DO NOT rewrite the entire document from scratch.
+        2. PRESERVE all existing badges, logos, HTML blocks, alignment tags (`<div align=\"center\">`), and formatting.
+        3. PRESERVE all existing sections (Tech Stack, Installation, etc.) unless they are explicitly removed or completely changed in the diff.
+        4. ONLY add or modify text/code blocks where the diff indicates a new feature, a changed dependency, or a new installation step.
+        5. If the diff is minor (e.g., a typo fix or hidden logic change), return the ORIGINAL README exactly as it is.
         
         ### ORIGINAL README ###
         ```markdown

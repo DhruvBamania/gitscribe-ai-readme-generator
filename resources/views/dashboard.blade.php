@@ -7,7 +7,7 @@
         <h2 class="fw-bold text-dark">
             <i class="fa-brands fa-github me-2"></i> Your Repositories
         </h2>
-        <div class="text-muted d-flex align-items-center">
+        <div class="text-muted d-flex align-items-center"> 
             <i class="fa-solid fa-user-circle fs-4 me-2"></i>
             <span>{{ auth()->user()->name }}</span>
         </div>

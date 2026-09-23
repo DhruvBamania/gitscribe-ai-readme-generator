@@ -53,7 +53,7 @@ class GeminiService
         
         CRITICAL: Output ONLY the raw Markdown code. Do not include any conversational filler before or after the code block.";
 
-        $response = Http::post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [
                 [
                     'parts' => [
@@ -92,7 +92,7 @@ class GeminiService
         
         CRITICAL: Output ONLY the raw updated Markdown code. Do not include any conversational filler before or after the code block.";
 
-        $response = Http::post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [
                 [
                     'parts' => [

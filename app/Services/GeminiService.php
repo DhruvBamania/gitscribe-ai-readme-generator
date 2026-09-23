@@ -82,6 +82,7 @@ class GeminiService
         CRITICAL RULES:
         1. Keep the exact same structure, badges, logos, and tone as the original README.
         2. Do NOT wrap your response in ```markdown ... ``` blocks. Return ONLY the raw markdown text.
+        3. You MUST output the ENTIRE document from start to finish. Do not truncate, summarize, or stop halfway.
         
         ### ORIGINAL README ###
         {$oldReadme}
@@ -98,6 +99,9 @@ class GeminiService
                         ['text' => $prompt]
                     ]
                 ]
+            ],
+            'generationConfig' => [
+                'maxOutputTokens' => 8192
             ]
         ]);
 

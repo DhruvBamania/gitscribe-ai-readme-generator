@@ -17,7 +17,6 @@
 
 -   [About GitScribe](#about-gitscribe)
 -   [Features](#features)
--   [Project Preview](#project-preview)
 -   [Tech Stack](#tech-stack)
 -   [Installation](#installation)
     -   [Prerequisites](#prerequisites)
@@ -47,14 +46,6 @@ This project aims to streamline the documentation process, allowing developers t
 -   **Dynamic Content**: Generates sections like installation guides, tech stacks, and usage instructions based on project analysis.
 -   **Markdown Excellence**: Outputs beautifully formatted and structured Markdown, ready for immediate use.
 -   **Extensible Agent System**: Designed with an adaptable agent architecture allowing for custom AI behaviors and specialized documentation tasks.
-
----
-
-## Project Preview
-
-Here’s a glimpse of GitScribe in action:
-
-![Project Preview](docs/preview.png)
 
 ---
 

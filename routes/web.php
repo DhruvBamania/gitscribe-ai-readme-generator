@@ -43,4 +43,4 @@ Route::get('/run-migrations-temp', function () {
 // GitHub Webhook Route (Exempt from CSRF in bootstrap/app.php)
 Route::post('/api/webhooks/github', [\App\Http\Controllers\WebhookController::class, 'handle'])
     ->middleware(\App\Http\Middleware\VerifyGithubWebhookSignature::class)
-    ->name('webhook.github.payload');
+    ->name('webhook.github.payload'); 

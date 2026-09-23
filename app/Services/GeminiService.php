@@ -69,4 +69,43 @@ class GeminiService
 
         return "Failed to generate README. Please try again.";
     }
+
+    public function generateReadmeFromDiff($repoName, $oldReadme, $diff)
+    {
+        $prompt = "Act as an Expert Developer Advocate and Technical Writer. 
+        You are managing the documentation for the GitHub project: {$repoName}.
+        
+        The developer just pushed new code. Below is the ORIGINAL README.md and the DIFF of the recent code changes.
+        
+        Task: Update the ORIGINAL README.md to reflect the new features, dependencies, or architectural changes introduced in the DIFF. 
+        Keep the overall style, tone, and existing valid information intact. Only modify or add sections that are relevant to the new changes.
+        
+        ### ORIGINAL README ###
+        ```markdown
+        {$oldReadme}
+        ```
+        
+        ### RECENT CODE CHANGES (DIFF) ###
+        ```diff
+        {$diff}
+        ```
+        
+        CRITICAL: Output ONLY the raw updated Markdown code. Do not include any conversational filler before or after the code block.";
+
+        $response = Http::post($this->apiUrl . '?key=' . $this->apiKey, [
+            'contents' => [
+                [
+                    'parts' => [
+                        ['text' => $prompt]
+                    ]
+                ]
+            ]
+        ]);
+
+        if ($response->successful()) {
+            return $response->json()['candidates'][0]['content']['parts'][0]['text'];
+        }
+
+        return "Failed to generate updated README. Please try again.";
+    }
 }

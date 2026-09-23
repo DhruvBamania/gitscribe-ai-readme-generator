@@ -18,6 +18,9 @@ php artisan view:cache
 echo "Running database migrations..."
 php artisan migrate --force
 
+echo "Starting queue worker in the background..."
+php artisan queue:work --tries=3 --timeout=150 &
+
 echo "Starting Apache..."
 # Execute Apache in the foreground
 exec apache2-foreground

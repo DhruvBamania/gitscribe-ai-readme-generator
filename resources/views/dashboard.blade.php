@@ -33,12 +33,26 @@
                                 <i class="fa-solid fa-code me-1"></i> {{ $repo['language'] ?? 'Code' }}
                             </span>
                             
-                            <a href="{{ route('readme.generate', ['owner' => $repo['owner']['login'], 'repo' => $repo['name']]) }}" 
-                            class="btn btn-sm btn-outline-danger generate-btn"
-                            onclick="showLoader(this)">
-                                <span class="btn-text"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate README</span>
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            </a>
+                            <div class="d-flex gap-2">
+                                @php
+                                    $isWebhookEnabled = in_array($repo['full_name'], $enabledWebhooks);
+                                @endphp
+                                <form action="{{ route('dashboard.webhook.toggle') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="owner" value="{{ $repo['owner']['login'] }}">
+                                    <input type="hidden" name="repo" value="{{ $repo['name'] }}">
+                                    <button type="submit" class="btn btn-sm {{ $isWebhookEnabled ? 'btn-success' : 'btn-outline-secondary' }}" title="{{ $isWebhookEnabled ? 'Auto-updates enabled' : 'Enable auto-updates on push' }}">
+                                        <i class="fa-solid fa-rotate"></i>
+                                    </button>
+                                </form>
+
+                                <a href="{{ route('readme.generate', ['owner' => $repo['owner']['login'], 'repo' => $repo['name']]) }}" 
+                                class="btn btn-sm btn-outline-danger generate-btn"
+                                onclick="showLoader(this)">
+                                    <span class="btn-text"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate README</span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

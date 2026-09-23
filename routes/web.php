@@ -30,9 +30,17 @@ Route::post('/logout', function (Request $request) {
 Route::get('/generate-readme/{owner}/{repo}', [DashboardController::class, 'generate'])->middleware('auth')
     ->name('readme.generate');
 
+Route::post('/dashboard/webhook/toggle', [DashboardController::class, 'toggleWebhook'])
+    ->middleware('auth')->name('dashboard.webhook.toggle');
+
 Route::post('/push-readme', [PullRequestController::class, 'push'])->name('readme.push')->middleware('auth');
 
 Route::get('/run-migrations-temp', function () {
     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     return 'Migrations ran successfully! Output: <br><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
 });
+
+// GitHub Webhook Route (Exempt from CSRF in bootstrap/app.php)
+Route::post('/api/webhooks/github', [\App\Http\Controllers\WebhookController::class, 'handle'])
+    ->middleware(\App\Http\Middleware\VerifyGithubWebhookSignature::class)
+    ->name('webhook.github.payload');

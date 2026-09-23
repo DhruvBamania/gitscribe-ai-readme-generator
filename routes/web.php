@@ -12,7 +12,7 @@ Route::get('/', function () {
         return redirect()->route('dashboard');
     }
     return view('welcome');
-})->name('home');
+})->name('login');
 
 Route::get('/auth/github', [GithubController::class, 'redirect']);
 Route::get('/auth/github/callback', [GithubController::class, 'callback']);

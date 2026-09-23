@@ -32,7 +32,7 @@ class GithubController extends Controller
                 'password' => bcrypt(Str::random(24)), 
             ]);
 
-            Auth::login($user);
+            Auth::login($user, true);
 
             return redirect('/dashboard');
             

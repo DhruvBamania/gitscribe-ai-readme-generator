@@ -41,7 +41,7 @@ This project aims to streamline the documentation process, allowing developers t
 ## Features
 
 -   **AI-Powered Generation**: Leverages advanced AI models, including Google Gemini, to understand project context and generate highly relevant, comprehensive, and high-quality `README.md` content, ensuring detailed documentation even for complex projects.
--   **GitHub PR Integration**: Seamlessly integrates with GitHub Pull Requests to automatically propose README updates or creations.
+-   **GitHub PR Integration**: Seamlessly integrates with GitHub Pull Requests to automatically propose README updates or creations, with enhanced reliability in processing repository events.
 -   **Laravel Foundation**: Built on the robust and scalable Laravel 12 framework, ensuring reliability and maintainability.
 -   **Dynamic Content**: Generates sections like installation guides, tech stacks, and usage instructions based on project analysis.
 -   **Markdown Excellence**: Outputs beautifully formatted and structured Markdown, ready for immediate use.

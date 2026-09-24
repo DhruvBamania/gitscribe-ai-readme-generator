@@ -47,6 +47,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'github_token' => 'encrypted',
+            'github_refresh_token' => 'encrypted',
         ];
     }
 }

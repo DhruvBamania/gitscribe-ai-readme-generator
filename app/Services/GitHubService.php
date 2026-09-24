@@ -119,4 +119,58 @@ class GitHubService
 
         return $prResponse;
     }
+
+    /**
+     * Handle rate limits for responses.
+     */
+    protected function handleRateLimit($response)
+    {
+        if ($response->status() === 403 || $response->status() === 429) {
+            throw new \Exception('GitHub API rate limit exceeded. Please try again later.');
+        }
+        return $response;
+    }
+
+    /**
+     * Fetch user repositories.
+     */
+    public function getUserRepos($token)
+    {
+        $response = Http::withToken($token)
+            ->get('https://api.github.com/user/repos', [
+                'sort' => 'updated',       
+                'per_page' => 12,          
+                'affiliation' => 'owner' 
+            ]);
+
+        $this->handleRateLimit($response);
+
+        return $response->successful() ? $response->json() : [];
+    }
+
+    /**
+     * Fetch repository contents (root directory).
+     */
+    public function getRepoContents($token, $owner, $repo)
+    {
+        $response = Http::withToken($token)
+            ->get("https://api.github.com/repos/{$owner}/{$repo}/contents");
+
+        $this->handleRateLimit($response);
+
+        return $response->successful() ? $response->json() : [];
+    }
+
+    /**
+     * Fetch repository metadata.
+     */
+    public function getRepoMeta($token, $owner, $repo)
+    {
+        $response = Http::withToken($token)
+            ->get("https://api.github.com/repos/{$owner}/{$repo}");
+
+        $this->handleRateLimit($response);
+
+        return $response->successful() ? $response->json() : [];
+    }
 }

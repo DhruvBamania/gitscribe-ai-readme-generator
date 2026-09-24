@@ -13,71 +13,68 @@ use Illuminate\Support\Str;
 class DashboardController extends Controller
 {
     //
-    public function index()
+    public function index(GitHubService $githubService)
     {
         $user = Auth::user();
 
-        $response = Http::withToken($user->github_token)
-            ->get('https://api.github.com/user/repos', [
-                'sort' => 'updated',       
-                'per_page' => 12,          
-                'affiliation' => 'owner' 
-            ]);
+        try {
+            $repos = \Illuminate\Support\Facades\Cache::remember("user_{$user->id}_repos", 300, function () use ($githubService, $user) {
+                return $githubService->getUserRepos($user->github_token);
+            });
+        } catch (\Exception $e) {
+            $repos = [];
+            \Illuminate\Support\Facades\Session::flash('error', $e->getMessage());
+        }
 
-        $repos = $response->successful() ? $response->json() : [];
         $enabledWebhooks = Webhook::where('user_id', $user->id)->pluck('repo_full_name')->toArray();
 
         return view('dashboard', compact('repos', 'enabledWebhooks'));
     }
 
-    public function generate($owner, $repo, GeminiService $gemini)
+    public function generate($owner, $repo, GeminiService $gemini, GitHubService $githubService)
     {
         $user = auth()->user();
 
-        $repoResponse = Http::withToken($user->github_token)
-            ->get("https://api.github.com/repos/{$owner}/{$repo}/contents");
-        
-        $files = [];
-        $fileContents = [];
-        $keyFiles = ['package.json', 'composer.json', 'Dockerfile', 'docker-compose.yml', 'requirements.txt', 'pom.xml', 'go.mod'];
+        try {
+            $items = $githubService->getRepoContents($user->github_token, $owner, $repo);
+            
+            $files = [];
+            $fileContents = [];
+            $keyFiles = ['package.json', 'composer.json', 'Dockerfile', 'docker-compose.yml', 'requirements.txt', 'pom.xml', 'go.mod'];
 
-        if ($repoResponse->successful()) {
-            $items = $repoResponse->json();
             foreach ($items as $item) {
                 $files[] = $item['name'];
                 
                 // Fetch deep context for key files
                 if (in_array($item['name'], $keyFiles) && $item['type'] === 'file') {
-                    $contentResponse = \Illuminate\Support\Facades\Http::withToken($user->github_token)
-                        ->withHeaders(['Accept' => 'application/vnd.github.v3.raw'])
-                        ->get("https://api.github.com/repos/{$owner}/{$repo}/contents/{$item['name']}");
+                    $content = $githubService->getFileContent($user->github_token, $owner, $repo, $item['name']);
                         
-                    if ($contentResponse->successful()) {
+                    if ($content) {
                         // Limit to 1500 chars to save tokens and prevent huge prompts
-                        $fileContents[$item['name']] = \Illuminate\Support\Str::limit($contentResponse->body(), 1500);
+                        $fileContents[$item['name']] = \Illuminate\Support\Str::limit($content, 1500);
                     }
                 }
             }
+
+            $meta = $githubService->getRepoMeta($user->github_token, $owner, $repo);
+
+            $readmeContent = $gemini->generateReadme(
+                $meta['name'] ?? $repo,
+                $meta['description'] ?? 'A professional web project.',
+                $meta['language'] ?? 'Unknown',
+                $files,
+                $fileContents
+            );
+
+            return view('preview', [
+                'content' => $readmeContent,
+                'repo' => $repo,
+                'owner' => $owner
+            ]);
+
+        } catch (\Exception $e) {
+            return redirect()->route('dashboard')->with('error', $e->getMessage());
         }
-
-        $metaResponse = Http::withToken($user->github_token)
-            ->get("https://api.github.com/repos/{$owner}/{$repo}");
-        
-        $meta = $metaResponse->json();
-
-        $readmeContent = $gemini->generateReadme(
-            $meta['name'],
-            $meta['description'] ?? 'A professional web project.',
-            $meta['language'] ?? 'Unknown',
-            $files,
-            $fileContents
-        );
-
-        return view('preview', [
-            'content' => $readmeContent,
-            'repo' => $repo,
-            'owner' => $owner
-        ]);
     }
 
     public function toggleWebhook(Request $request, GitHubService $githubService)

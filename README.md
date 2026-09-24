@@ -1,8 +1,8 @@
 <div align="center">
 
-# GitScribe: AI-Powered README Generation for Your GitHub Projects
+# GitScribe: AI-Powered README and Wiki Generation for Your GitHub Projects
 
-*Transform your project documentation with intelligent, automated READMEs.*
+*Transform your project documentation with intelligent, automated READMEs and comprehensive Wikis.*
 
 </div>
 
@@ -32,16 +32,17 @@
 
 ## About GitScribe
 
-GitScribe is an innovative, AI-powered Laravel application engineered to automate the creation of professional and highly readable `README.md` files for your GitHub projects. By integrating directly into your development workflow via GitHub Pull Requests, now with enhanced reliability and modularity in its GitHub interactions, GitScribe analyzes your project's context, code, and dependencies to generate comprehensive and accurate documentation. Say goodbye to manual README updates and ensure your projects are always presented with best-in-class documentation.
+GitScribe is an innovative, AI-powered Laravel application engineered to automate the creation of professional and highly readable `README.md` files and comprehensive project Wikis for your GitHub projects. By integrating directly into your development workflow via GitHub Pull Requests, now with enhanced reliability and modularity in its GitHub interactions, GitScribe analyzes your project's context, code, and dependencies to generate comprehensive and accurate documentation. It now extends its capabilities to generate structured and detailed project Wikis, ensuring all aspects of your project are meticulously documented. Say goodbye to manual documentation updates and ensure your projects are always presented with best-in-class documentation.
 
-This project aims to streamline the documentation process, allowing developers to focus more on coding and less on descriptive overhead. Whether you're maintaining a small open-source utility or a complex SaaS product, GitScribe ensures your READMEs reflect the quality and professionalism of your work.
+This project aims to streamline the documentation process, allowing developers to focus more on coding and less on descriptive overhead. Whether you're maintaining a small open-source utility or a complex SaaS product, GitScribe ensures your READMEs and Wikis reflect the quality and professionalism of your work.
 
 ---
 
 ## Features
 
--   **AI-Powered Generation**: Leverages advanced AI models, including Google Gemini, to understand project context and generate highly relevant, comprehensive, and high-quality `README.md` content, ensuring detailed documentation even for complex projects.
--   **GitHub PR Integration**: Seamlessly integrates with GitHub Pull Requests to automatically propose README updates or creations. This integration now leverages a dedicated, robust GitHub service layer, ensuring higher reliability and efficiency in processing repository events and managing pull request workflows.
+-   **AI-Powered Generation**: Leverages advanced AI models, including Google Gemini, to understand project context and generate highly relevant, comprehensive, and high-quality `README.md` content and Wiki pages, ensuring detailed documentation even for complex projects.
+-   **AI-Powered Wiki Generation**: Beyond READMEs, GitScribe now intelligently generates structured, multi-page project Wikis within a dedicated `docs/` folder in your repository. It plans the wiki architecture, picks relevant files, and writes detailed content for each page, delivering a complete documentation suite via Pull Request.
+-   **GitHub PR Integration**: Seamlessly integrates with GitHub Pull Requests to automatically propose README updates or creations and full project Wiki documentation. This integration now leverages a dedicated, robust GitHub service layer, ensuring higher reliability and efficiency in processing repository events and managing pull request workflows.
 -   **Laravel Foundation**: Built on the robust and scalable Laravel 12 framework, ensuring reliability and maintainability.
 -   **Dynamic Content**: Generates sections like installation guides, tech stacks, and usage instructions based on project analysis.
 -   **Markdown Excellence**: Outputs beautifully formatted and structured Markdown, ready for immediate use.
@@ -185,7 +186,7 @@ GitScribe includes a `Dockerfile` for easy deployment in a containerized environ
 All core application configuration is managed via environment variables in the `.env` file. Key configurations include:
 
 -   **Database**: `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
--   **AI Services**: `AI_SERVICE_PROVIDER`, `AI_SERVICE_KEY`. These will point to your chosen AI model provider (e.g., OpenAI, Claude, **Gemini**).
+-   **AI Services**: `AI_SERVICE_PROVIDER`, `AI_SERVICE_KEY`. These will point to your chosen AI model provider (e.g., OpenAI, Claude, **Gemini**) for both README and Wiki generation.
 -   **GitHub Integration**: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI` for OAuth authentication and interacting with the GitHub API.
 
 > **Important**: Never commit your `.env` file to version control. Use `.env.example` as a template and populate `.env` on your deployment target.
@@ -194,19 +195,22 @@ All core application configuration is managed via environment variables in the `
 
 ## Usage
 
-Once GitScribe is installed and configured, you can begin leveraging its AI capabilities with confidence, thanks to its robust handling of GitHub interactions and improved error feedback. The primary workflow involves connecting your GitHub account and then configuring GitScribe to monitor your repositories for new Pull Requests.
+Once GitScribe is installed and configured, you can begin leveraging its AI capabilities with confidence, thanks to its robust handling of GitHub interactions and improved error feedback. The primary workflow involves connecting your GitHub account and then configuring GitScribe to monitor your repositories for new Pull Requests or manually trigger documentation generation.
 
 1.  **Authenticate with GitHub**:
     Navigate to the application in your browser and follow the prompts to authenticate GitScribe with your GitHub account using OAuth. This grants GitScribe the necessary permissions to read your repository information and create Pull Requests.
 
 2.  **Configure Monitored Repositories**:
-    Within the GitScribe dashboard, specify which repositories you want GitScribe to manage. You can set rules for when a new README should be generated (e.g., on `main` branch merges, specific labels on PRs, or manually triggered).
+    Within the GitScribe dashboard, specify which repositories you want GitScribe to manage. You can set rules for when a new README or Wiki should be generated (e.g., on `main` branch merges, specific labels on PRs, or manually triggered).
 
 3.  **Triggering README Generation**:
     -   **Via Pull Request**: When a new Pull Request is opened or updated in a monitored repository, GitScribe will analyze the changes and propose a new or updated `README.md` as a comment or a new PR itself.
     -   **Manual Trigger**: You may also have an option within the GitScribe interface to manually trigger a README generation for any linked repository.
 
-GitScribe will analyze your project structure, `composer.json`, `package.json`, and potentially other key files to infer the project's purpose, technologies used, and installation steps. The generated README will then be presented for your review and approval.
+    GitScribe will analyze your project structure, `composer.json`, `package.json`, and potentially other key files to infer the project's purpose, technologies used, and installation steps. The generated README will then be presented for your review and approval.
+
+4.  **Triggering Wiki Generation (New!)**:
+    -   **Manual Trigger**: You can now initiate a full project Wiki generation for any linked repository. GitScribe will analyze your repository, plan a logical Wiki architecture (e.g., Introduction, Architecture, API Reference, Deployment), and then generate detailed Markdown pages for each section. This comprehensive Wiki will be submitted as a dedicated Pull Request for your review, containing multiple `.md` files in a `docs/` subdirectory within your repository.
 
 ---
 
@@ -234,6 +238,7 @@ The project follows a standard Laravel application structure, with a few custom 
 ├── composer.lock
 ├── config/                     # Laravel configuration files
 ├── database/                   # Database migrations, seeders, factories
+├── docs/                       # Autogenerated project Wiki pages
 ├── package.json                # Node.js dependencies and scripts
 ├── phpunit.xml
 ├── public/                     # Web server document root

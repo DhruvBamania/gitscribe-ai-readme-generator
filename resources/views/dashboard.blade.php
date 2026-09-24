@@ -28,12 +28,12 @@
                             {{ $repo['description'] ?? 'No description provided for this repository.' }}
                         </p>
                         
-                        <div class="d-flex justify-content-between align-items-center mt-4">
-                            <span class="badge bg-light text-dark border p-2">
-                                <i class="fa-solid fa-code me-1"></i> {{ $repo['language'] ?? 'Code' }}
-                            </span>
-                            
-                            <div class="d-flex gap-2">
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-light text-dark border p-2">
+                                    <i class="fa-solid fa-code me-1"></i> {{ $repo['language'] ?? 'Code' }}
+                                </span>
+                                
                                 @php
                                     $isWebhookEnabled = in_array($repo['full_name'], $enabledWebhooks);
                                 @endphp
@@ -42,23 +42,25 @@
                                     <input type="hidden" name="owner" value="{{ $repo['owner']['login'] }}">
                                     <input type="hidden" name="repo" value="{{ $repo['name'] }}">
                                     <button type="submit" class="btn btn-sm {{ $isWebhookEnabled ? 'btn-success' : 'btn-outline-secondary' }}" title="{{ $isWebhookEnabled ? 'Auto-updates enabled' : 'Enable auto-updates on push' }}">
-                                        <i class="fa-solid fa-rotate"></i>
+                                        <i class="fa-solid fa-rotate"></i> {{ $isWebhookEnabled ? 'Auto-Sync On' : 'Auto-Sync Off' }}
                                     </button>
                                 </form>
-
+                            </div>
+                            
+                            <div class="d-flex gap-2">
                                 <a href="{{ route('readme.generate', ['owner' => $repo['owner']['login'], 'repo' => $repo['name']]) }}" 
-                                class="btn btn-sm btn-outline-danger generate-btn"
+                                class="btn btn-sm btn-outline-danger flex-fill generate-btn text-center"
                                 onclick="showLoader(this)">
-                                    <span class="btn-text"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate README</span>
+                                    <span class="btn-text"><i class="fa-solid fa-wand-magic-sparkles"></i> README</span>
                                     <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                 </a>
 
-                                <form action="{{ route('wiki.generate') }}" method="POST" class="d-inline" onsubmit="showLoader(this.querySelector('button'))">
+                                <form action="{{ route('wiki.generate') }}" method="POST" class="flex-fill m-0" onsubmit="showLoader(this.querySelector('button'))">
                                     @csrf
                                     <input type="hidden" name="owner" value="{{ $repo['owner']['login'] }}">
                                     <input type="hidden" name="repo" value="{{ $repo['name'] }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-primary generate-btn">
-                                        <span class="btn-text"><i class="fa-solid fa-book"></i> Generate Wiki</span>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary w-100 generate-btn text-center">
+                                        <span class="btn-text"><i class="fa-solid fa-book"></i> Wiki</span>
                                         <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                     </button>
                                 </form>

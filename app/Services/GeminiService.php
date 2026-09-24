@@ -70,6 +70,96 @@ class GeminiService
         return "Failed to generate README. Please try again.";
     }
 
+    public function planWikiArchitecture($repoName, $fileTreeJson)
+    {
+        $prompt = "You are an Expert Technical Writer and Software Architect. 
+        You need to design a Wiki for the project: {$repoName}.
+        Below is the repository file tree. 
+        
+        TASK:
+        Create a table of contents for the Wiki with exactly 4 to 5 main pages. 
+        Typical pages might include '01-Introduction', '02-Architecture', '03-API-Reference', '04-Deployment', etc.
+        
+        OUTPUT FORMAT:
+        Output ONLY a JSON array of strings containing the page topics/titles. Do not include markdown blocks.
+        Example: [\"01-Introduction\", \"02-Architecture\", \"03-API-Reference\", \"04-Deployment\"]
+        
+        ### FILE TREE ###
+        {$fileTreeJson}";
+
+        $response = Http::timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
+            'contents' => [['parts' => [['text' => $prompt]]]]
+        ]);
+
+        if ($response->successful()) {
+            $text = preg_replace('/^```(?:json)?\s*/i', '', $response->json()['candidates'][0]['content']['parts'][0]['text']);
+            $text = preg_replace('/\s*```$/', '', $text);
+            $decoded = json_decode($text, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
+    public function pickFilesForWikiPage($repoName, $pageTopic, $fileTreeJson)
+    {
+        $prompt = "You are preparing to write a Wiki page titled '{$pageTopic}' for the project {$repoName}.
+        
+        TASK:
+        From the file tree below, pick up to 3 files that contain the necessary information to write this specific page.
+        
+        OUTPUT FORMAT:
+        Output ONLY a JSON array of strings containing the file paths. Do not include markdown blocks.
+        
+        ### FILE TREE ###
+        {$fileTreeJson}";
+
+        $response = Http::timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
+            'contents' => [['parts' => [['text' => $prompt]]]]
+        ]);
+
+        if ($response->successful()) {
+            $text = preg_replace('/^```(?:json)?\s*/i', '', $response->json()['candidates'][0]['content']['parts'][0]['text']);
+            $text = preg_replace('/\s*```$/', '', $text);
+            $decoded = json_decode($text, true);
+            return is_array($decoded) ? array_slice($decoded, 0, 3) : [];
+        }
+
+        return [];
+    }
+
+    public function writeWikiPage($repoName, $pageTopic, $fileContents)
+    {
+        $context = "";
+        foreach ($fileContents as $file => $content) {
+            $context .= "--- {$file} ---\n```\n{$content}\n```\n\n";
+        }
+
+        $prompt = "You are an Expert Technical Writer. Write the complete markdown content for a Wiki page titled '{$pageTopic}' for the project {$repoName}.
+        
+        Use the following file contents as your source of truth:
+        
+        ### FILE CONTENTS ###
+        {$context}
+        
+        CRITICAL RULES:
+        1. Write detailed, highly readable markdown.
+        2. Do NOT wrap your response in ```markdown ... ``` blocks. Return ONLY the raw markdown text.
+        3. Do not include conversational filler.";
+
+        $response = Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
+            'contents' => [['parts' => [['text' => $prompt]]]]
+        ]);
+
+        if ($response->successful()) {
+            $text = $response->json()['candidates'][0]['content']['parts'][0]['text'];
+            $text = preg_replace('/^```(?:markdown)?\s*/i', '', $text);
+            return preg_replace('/\s*```$/', '', $text);
+        }
+
+        return "# {$pageTopic}\n\nFailed to generate content.";
+    }
+
     public function pickFilesToExplore($repoName, $fileTreeJson)
     {
         $prompt = "You are a Deep Codebase Explorer. You are mapping out the architecture of a GitHub project named: {$repoName}.

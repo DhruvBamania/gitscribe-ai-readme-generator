@@ -52,6 +52,16 @@
                                     <span class="btn-text"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate README</span>
                                     <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                                 </a>
+
+                                <form action="{{ route('wiki.generate') }}" method="POST" class="d-inline" onsubmit="showLoader(this.querySelector('button'))">
+                                    @csrf
+                                    <input type="hidden" name="owner" value="{{ $repo['owner']['login'] }}">
+                                    <input type="hidden" name="repo" value="{{ $repo['name'] }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary generate-btn">
+                                        <span class="btn-text"><i class="fa-solid fa-book"></i> Generate Wiki</span>
+                                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

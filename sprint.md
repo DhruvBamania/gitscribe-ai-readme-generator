@@ -14,6 +14,12 @@ Use this file to track current development progress. AI Agents: update this file
 - [ ] None
 
 ### ✅ Done
+- [x] **Sprint: Autonomous Full-Project Wiki Builder**
+  - [x] **UI:** Add "Generate Wiki" button to the Dashboard repository list.
+  - [x] **GitHub API:** Implement `commitMultipleFiles` via `createWikiPullRequest` in `GitHubService` to support pushing entire `docs/` folders.
+  - [x] **AI Logic:** Add `planWikiArchitecture`, `pickFilesForWikiPage`, and `writeWikiPage` methods to `GeminiService`.
+  - [x] **Background Processing:** Create `GenerateWikiJob` to handle the heavy AI looping asynchronously so the UI doesn't freeze.
+  - [x] **Controller:** Add `WikiController@generate` to dispatch the job and notify the user.
 - [x] **Sprint: Detailed Audit Report**
   - [x] Analyze security and dependencies (authentication, API keys, etc.).
   - [x] Review code quality, architecture, and Laravel best practices.

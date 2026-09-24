@@ -120,6 +120,71 @@ class GitHubService
         return $prResponse;
     }
 
+    public function createWikiPullRequest($token, $owner, $repo, $filesArray, $commitMessage, $prTitle, $prBody)
+    {
+        $baseUrl = "https://api.github.com/repos/{$owner}/{$repo}";
+
+        // 1. Get default branch and base commit SHA
+        $repoData = Http::withToken($token)->get($baseUrl)->json();
+        $defaultBranch = $repoData['default_branch'];
+
+        $branchData = Http::withToken($token)->get("{$baseUrl}/git/ref/heads/{$defaultBranch}")->json();
+        $baseCommitSha = $branchData['object']['sha'];
+
+        // Get the base tree SHA from the base commit
+        $commitData = Http::withToken($token)->get("{$baseUrl}/git/commits/{$baseCommitSha}")->json();
+        $baseTreeSha = $commitData['tree']['sha'];
+
+        // 2. Create Blobs for each file
+        $treeNodes = [];
+        foreach ($filesArray as $path => $content) {
+            $blobResponse = Http::withToken($token)->post("{$baseUrl}/git/blobs", [
+                'content' => $content,
+                'encoding' => 'utf-8'
+            ]);
+            $blobSha = $blobResponse->json()['sha'];
+
+            $treeNodes[] = [
+                'path' => $path,
+                'mode' => '100644',
+                'type' => 'blob',
+                'sha' => $blobSha
+            ];
+        }
+
+        // 3. Create a new Tree
+        $treeResponse = Http::withToken($token)->post("{$baseUrl}/git/trees", [
+            'base_tree' => $baseTreeSha,
+            'tree' => $treeNodes
+        ]);
+        $newTreeSha = $treeResponse->json()['sha'];
+
+        // 4. Create a Commit
+        $commitResponse = Http::withToken($token)->post("{$baseUrl}/git/commits", [
+            'message' => $commitMessage,
+            'tree' => $newTreeSha,
+            'parents' => [$baseCommitSha]
+        ]);
+        $newCommitSha = $commitResponse->json()['sha'];
+
+        // 5. Create a new Branch
+        $newBranchName = 'gitscribe-wiki-' . time();
+        Http::withToken($token)->post("{$baseUrl}/git/refs", [
+            'ref' => "refs/heads/{$newBranchName}",
+            'sha' => $newCommitSha
+        ]);
+
+        // 6. Create Pull Request
+        $prResponse = Http::withToken($token)->post("{$baseUrl}/pulls", [
+            'title' => $prTitle,
+            'body' => $prBody,
+            'head' => $newBranchName,
+            'base' => $defaultBranch
+        ]);
+
+        return $prResponse;
+    }
+
     /**
      * Handle rate limits for responses.
      */

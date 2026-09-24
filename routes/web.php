@@ -30,6 +30,9 @@ Route::post('/logout', function (Request $request) {
 Route::get('/generate-readme/{owner}/{repo}', [DashboardController::class, 'generate'])->middleware('auth')
     ->name('readme.generate');
 
+Route::post('/generate-wiki', [\App\Http\Controllers\WikiController::class, 'generate'])->middleware('auth')
+    ->name('wiki.generate');
+
 Route::post('/dashboard/webhook/toggle', [DashboardController::class, 'toggleWebhook'])
     ->middleware('auth')->name('dashboard.webhook.toggle');
 

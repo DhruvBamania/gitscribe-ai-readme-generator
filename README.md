@@ -32,7 +32,7 @@
 
 ## About GitScribe
 
-GitScribe is an innovative, AI-powered Laravel application engineered to automate the creation of professional and highly readable `README.md` files for your GitHub projects. By integrating directly into your development workflow via GitHub Pull Requests, GitScribe analyzes your project's context, code, and dependencies to generate comprehensive and accurate documentation. Say goodbye to manual README updates and ensure your projects are always presented with best-in-class documentation.
+GitScribe is an innovative, AI-powered Laravel application engineered to automate the creation of professional and highly readable `README.md` files for your GitHub projects. By integrating directly into your development workflow via GitHub Pull Requests, now with enhanced reliability and modularity in its GitHub interactions, GitScribe analyzes your project's context, code, and dependencies to generate comprehensive and accurate documentation. Say goodbye to manual README updates and ensure your projects are always presented with best-in-class documentation.
 
 This project aims to streamline the documentation process, allowing developers to focus more on coding and less on descriptive overhead. Whether you're maintaining a small open-source utility or a complex SaaS product, GitScribe ensures your READMEs reflect the quality and professionalism of your work.
 
@@ -41,7 +41,7 @@ This project aims to streamline the documentation process, allowing developers t
 ## Features
 
 -   **AI-Powered Generation**: Leverages advanced AI models, including Google Gemini, to understand project context and generate highly relevant, comprehensive, and high-quality `README.md` content, ensuring detailed documentation even for complex projects.
--   **GitHub PR Integration**: Seamlessly integrates with GitHub Pull Requests to automatically propose README updates or creations, with enhanced reliability in processing repository events.
+-   **GitHub PR Integration**: Seamlessly integrates with GitHub Pull Requests to automatically propose README updates or creations. This integration now leverages a dedicated, robust GitHub service layer, ensuring higher reliability and efficiency in processing repository events and managing pull request workflows.
 -   **Laravel Foundation**: Built on the robust and scalable Laravel 12 framework, ensuring reliability and maintainability.
 -   **Dynamic Content**: Generates sections like installation guides, tech stacks, and usage instructions based on project analysis.
 -   **Markdown Excellence**: Outputs beautifully formatted and structured Markdown, ready for immediate use.
@@ -194,7 +194,7 @@ All core application configuration is managed via environment variables in the `
 
 ## Usage
 
-Once GitScribe is installed and configured, you can begin leveraging its AI capabilities. The primary workflow involves connecting your GitHub account and then configuring GitScribe to monitor your repositories for new Pull Requests.
+Once GitScribe is installed and configured, you can begin leveraging its AI capabilities with confidence, thanks to its robust handling of GitHub interactions and improved error feedback. The primary workflow involves connecting your GitHub account and then configuring GitScribe to monitor your repositories for new Pull Requests.
 
 1.  **Authenticate with GitHub**:
     Navigate to the application in your browser and follow the prompts to authenticate GitScribe with your GitHub account using OAuth. This grants GitScribe the necessary permissions to read your repository information and create Pull Requests.

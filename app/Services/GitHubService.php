@@ -173,4 +173,25 @@ class GitHubService
 
         return $response->successful() ? $response->json() : [];
     }
+
+    /**
+     * Fetch the complete file tree for Deep Explorer.
+     */
+    public function getRepoTree($token, $owner, $repo, $defaultBranch)
+    {
+        $response = Http::withToken($token)
+            ->get("https://api.github.com/repos/{$owner}/{$repo}/git/trees/{$defaultBranch}?recursive=1");
+
+        $this->handleRateLimit($response);
+
+        if ($response->successful()) {
+            // Filter out trees (directories) and keep only blobs (files) to save space
+            $tree = $response->json()['tree'] ?? [];
+            return array_values(array_filter($tree, function ($item) {
+                return $item['type'] === 'blob';
+            }));
+        }
+
+        return [];
+    }
 }

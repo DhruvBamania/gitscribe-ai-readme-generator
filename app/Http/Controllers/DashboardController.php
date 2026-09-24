@@ -36,8 +36,12 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         try {
+            $meta = $githubService->getRepoMeta($user->github_token, $owner, $repo);
+            $repoName = $meta['name'] ?? $repo;
+            $defaultBranch = $meta['default_branch'] ?? 'main';
+
+            // 1. Root Level Context
             $items = $githubService->getRepoContents($user->github_token, $owner, $repo);
-            
             $files = [];
             $fileContents = [];
             $keyFiles = ['package.json', 'composer.json', 'Dockerfile', 'docker-compose.yml', 'requirements.txt', 'pom.xml', 'go.mod'];
@@ -45,21 +49,34 @@ class DashboardController extends Controller
             foreach ($items as $item) {
                 $files[] = $item['name'];
                 
-                // Fetch deep context for key files
+                // Fetch standard manifest files
                 if (in_array($item['name'], $keyFiles) && $item['type'] === 'file') {
                     $content = $githubService->getFileContent($user->github_token, $owner, $repo, $item['name']);
-                        
                     if ($content) {
-                        // Limit to 1500 chars to save tokens and prevent huge prompts
                         $fileContents[$item['name']] = \Illuminate\Support\Str::limit($content, 1500);
                     }
                 }
             }
 
-            $meta = $githubService->getRepoMeta($user->github_token, $owner, $repo);
+            // 2. Deep Codebase Explorer (AI-driven)
+            $tree = $githubService->getRepoTree($user->github_token, $owner, $repo, $defaultBranch);
+            
+            // Limit tree to 400 files to prevent exceeding Gemini's prompt limits
+            $limitedTree = array_map(function($node) { return $node['path']; }, array_slice($tree, 0, 400));
+            
+            $deepFiles = $gemini->pickFilesToExplore($repoName, json_encode($limitedTree));
 
+            foreach ($deepFiles as $deepFile) {
+                // Fetch each AI-selected file
+                $content = $githubService->getFileContent($user->github_token, $owner, $repo, $deepFile);
+                if ($content) {
+                    $fileContents[$deepFile] = \Illuminate\Support\Str::limit($content, 1500);
+                }
+            }
+
+            // 3. Final README Generation
             $readmeContent = $gemini->generateReadme(
-                $meta['name'] ?? $repo,
+                $repoName,
                 $meta['description'] ?? 'A professional web project.',
                 $meta['language'] ?? 'Unknown',
                 $files,

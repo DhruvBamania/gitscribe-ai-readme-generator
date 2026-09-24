@@ -70,54 +70,142 @@ class GeminiService
         return "Failed to generate README. Please try again.";
     }
 
-    public function generateReadmeFromDiff($repoName, $oldReadme, $diff)
+    public function pickFilesToExplore($repoName, $fileTreeJson)
     {
-        $prompt = "Act as an Expert Developer Advocate and Technical Writer. 
-        You are managing the documentation for the GitHub project: {$repoName}.
+        $prompt = "You are a Deep Codebase Explorer. You are mapping out the architecture of a GitHub project named: {$repoName}.
         
-        Below is the ORIGINAL README.md and the DIFF of the recent code changes.
+        Below is the JSON representation of the repository's entire file tree (only showing files, not directories).
         
-        Task: Rewrite the entire README file exactly as the original, but seamlessly incorporate the new changes, features, or dependencies shown in the DIFF.
+        TASK:
+        Identify up to 5 of the most important files that contain the core business logic, routing, or architectural setup of this project. 
+        Exclude simple package managers (like package.json) or docker files, as those are already captured. We want the meat of the code (e.g. routes/web.php, app/Http/Controllers/HomeController.php, src/main.js, etc).
         
-        CRITICAL RULES:
-        1. Keep the exact same structure, badges, logos, and tone as the original README.
-        2. Do NOT wrap your response in ```markdown ... ``` blocks. Return ONLY the raw markdown text.
-        3. You MUST output the ENTIRE document from start to finish. Do not truncate, summarize, or stop halfway.
+        OUTPUT FORMAT:
+        Output ONLY a valid JSON array of strings containing the exact file paths. Do not include markdown code blocks.
+        Example: [\"routes/web.php\", \"app/Models/User.php\"]
         
-        ### ORIGINAL README ###
-        {$oldReadme}
-        
-        ### RECENT CODE CHANGES (DIFF) ###
-        ```diff
-        {$diff}
-        ```";
+        ### FILE TREE ###
+        {$fileTreeJson}";
 
-        $response = \Illuminate\Support\Facades\Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [
                 [
                     'parts' => [
                         ['text' => $prompt]
                     ]
                 ]
-            ],
-            'generationConfig' => [
-                'maxOutputTokens' => 8192
             ]
         ]);
 
         if ($response->successful()) {
             $text = $response->json()['candidates'][0]['content']['parts'][0]['text'];
-            
-            // Robustly strip ```markdown and ``` if the AI ignores the prompt
-            $text = preg_replace('/^```(?:markdown)?\s*/i', '', $text);
+            $text = preg_replace('/^```(?:json)?\s*/i', '', $text);
             $text = preg_replace('/\s*```$/', '', $text);
             
-            return $text;
+            $decoded = json_decode($text, true);
+            if (is_array($decoded)) {
+                return array_slice($decoded, 0, 5); // Ensure max 5
+            }
         }
 
-        $errorBody = $response->body();
-        \Illuminate\Support\Facades\Log::error('Gemini API Error in generateReadmeFromDiff: ' . $errorBody);
+        return [];
+    }
 
-        throw new \Exception("Gemini API Error: " . $errorBody);
+    public function generateReadmeFromDiff($repoName, $oldReadme, $diff)
+    {
+        $draft = null;
+        $feedback = "";
+        
+        for ($i = 0; $i < 3; $i++) {
+            $writerPrompt = "Act as an Expert Developer Advocate and Technical Writer. 
+            You are managing the documentation for the GitHub project: {$repoName}.
+            
+            Below is the ORIGINAL README.md and the DIFF of the recent code changes.
+            
+            Task: Rewrite the entire README file exactly as the original, but seamlessly incorporate the new changes, features, or dependencies shown in the DIFF.
+            
+            CRITICAL RULES:
+            1. Keep the exact same structure, badges, logos, and tone as the original README.
+            2. Do NOT wrap your response in ```markdown ... ``` blocks. Return ONLY the raw markdown text.
+            3. You MUST output the ENTIRE document from start to finish. Do not truncate, summarize, or stop halfway.";
+            
+            if ($feedback !== "") {
+                $writerPrompt .= "\n\nCRITICAL REVIEW FEEDBACK FROM PREVIOUS DRAFT:\n{$feedback}\nPlease fix these issues in your new draft.";
+                $writerPrompt .= "\n\n### PREVIOUS DRAFT ###\n{$draft}";
+            } else {
+                $writerPrompt .= "\n\n### ORIGINAL README ###\n{$oldReadme}";
+            }
+            
+            $writerPrompt .= "\n\n### RECENT CODE CHANGES (DIFF) ###\n```diff\n{$diff}\n```";
+
+            $response = \Illuminate\Support\Facades\Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $writerPrompt]
+                        ]
+                    ]
+                ],
+                'generationConfig' => [
+                    'maxOutputTokens' => 8192
+                ]
+            ]);
+
+            if (!$response->successful()) {
+                $errorBody = $response->body();
+                \Illuminate\Support\Facades\Log::error('Gemini API Error in generateReadmeFromDiff Writer: ' . $errorBody);
+                throw new \Exception("Gemini API Error: " . $errorBody);
+            }
+
+            $draft = $response->json()['candidates'][0]['content']['parts'][0]['text'];
+            
+            $draft = preg_replace('/^```(?:markdown)?\s*/i', '', $draft);
+            $draft = preg_replace('/\s*```$/', '', $draft);
+
+            $reviewerPrompt = "You are a strict QA Reviewer for GitHub Documentation.
+            Review the following DRAFT README against the ORIGINAL README and the recent DIFF.
+            
+            Questions to answer:
+            1. Does the DRAFT perfectly maintain the original structure, badges, and headers from the ORIGINAL README?
+            2. Does the DRAFT accurately reflect the new features or changes shown in the DIFF?
+            3. Did the DRAFT improperly truncate or remove important sections?
+            
+            If the DRAFT is perfect and needs no changes, reply with EXACTLY the word 'APPROVED' and nothing else.
+            If there are flaws, list the specific flaws that need to be fixed in detail.
+            
+            ### ORIGINAL README ###
+            {$oldReadme}
+            
+            ### DIFF ###
+            ```diff\n{$diff}\n```
+            
+            ### DRAFT TO REVIEW ###
+            {$draft}";
+
+            $reviewResponse = \Illuminate\Support\Facades\Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $reviewerPrompt]
+                        ]
+                    ]
+                ]
+            ]);
+
+            if (!$reviewResponse->successful()) {
+                \Illuminate\Support\Facades\Log::warning('Gemini API Error in Reviewer Phase: ' . $reviewResponse->body());
+                return $draft;
+            }
+
+            $reviewResult = trim($reviewResponse->json()['candidates'][0]['content']['parts'][0]['text']);
+            
+            if (strtoupper($reviewResult) === 'APPROVED' || strpos(strtoupper($reviewResult), 'APPROVED') !== false) {
+                return $draft;
+            }
+            
+            $feedback = $reviewResult;
+        }
+
+        return $draft;
     }
 }

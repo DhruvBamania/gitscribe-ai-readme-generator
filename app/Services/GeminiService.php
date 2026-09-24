@@ -98,6 +98,7 @@ class GeminiService
             return is_array($decoded) ? $decoded : [];
         }
 
+        \Illuminate\Support\Facades\Log::error('Gemini API Error in planWikiArchitecture: ' . $response->body());
         return [];
     }
 
@@ -125,6 +126,7 @@ class GeminiService
             return is_array($decoded) ? array_slice($decoded, 0, 3) : [];
         }
 
+        \Illuminate\Support\Facades\Log::error('Gemini API Error in pickFilesForWikiPage: ' . $response->body());
         return [];
     }
 
@@ -157,6 +159,7 @@ class GeminiService
             return preg_replace('/\s*```$/', '', $text);
         }
 
+        \Illuminate\Support\Facades\Log::error('Gemini API Error in writeWikiPage: ' . $response->body());
         return "# {$pageTopic}\n\nFailed to generate content.";
     }
 

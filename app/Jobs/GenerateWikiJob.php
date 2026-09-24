@@ -64,6 +64,9 @@ class GenerateWikiJob implements ShouldQueue
             $filename = 'docs/' . \Illuminate\Support\Str::slug($pageTopic) . '.md';
             
             $generatedFiles[$filename] = $markdown;
+            
+            // Sleep to avoid hitting Gemini API rate limits (15 RPM free tier)
+            sleep(4);
         }
 
         // 3. Publish via PR

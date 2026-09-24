@@ -53,7 +53,9 @@ class GeminiService
         
         CRITICAL: Output ONLY the raw Markdown code. Do not include any conversational filler before or after the code block.";
 
-        $response = Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::retry(3, 10000, function ($exception, $request) {
+            return $exception->response && $exception->response->status() === 429;
+        })->timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [
                 [
                     'parts' => [
@@ -67,6 +69,7 @@ class GeminiService
             return $response->json()['candidates'][0]['content']['parts'][0]['text'];
         }
 
+        \Illuminate\Support\Facades\Log::error('Gemini API Error in generateReadme: ' . $response->body());
         return "Failed to generate README. Please try again.";
     }
 
@@ -87,7 +90,9 @@ class GeminiService
         ### FILE TREE ###
         {$fileTreeJson}";
 
-        $response = Http::timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::retry(3, 10000, function ($exception, $request) {
+            return $exception->response && $exception->response->status() === 429;
+        })->timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [['parts' => [['text' => $prompt]]]]
         ]);
 
@@ -115,7 +120,9 @@ class GeminiService
         ### FILE TREE ###
         {$fileTreeJson}";
 
-        $response = Http::timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::retry(3, 10000, function ($exception, $request) {
+            return $exception->response && $exception->response->status() === 429;
+        })->timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [['parts' => [['text' => $prompt]]]]
         ]);
 
@@ -149,7 +156,9 @@ class GeminiService
         2. Do NOT wrap your response in ```markdown ... ``` blocks. Return ONLY the raw markdown text.
         3. Do not include conversational filler.";
 
-        $response = Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::retry(3, 10000, function ($exception, $request) {
+            return $exception->response && $exception->response->status() === 429;
+        })->timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [['parts' => [['text' => $prompt]]]]
         ]);
 
@@ -180,7 +189,9 @@ class GeminiService
         ### FILE TREE ###
         {$fileTreeJson}";
 
-        $response = Http::timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
+        $response = Http::retry(3, 10000, function ($exception, $request) {
+            return $exception->response && $exception->response->status() === 429;
+        })->timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
             'contents' => [
                 [
                     'parts' => [
@@ -201,6 +212,7 @@ class GeminiService
             }
         }
 
+        \Illuminate\Support\Facades\Log::error('Gemini API Error in pickFilesToExplore: ' . $response->body());
         return [];
     }
 

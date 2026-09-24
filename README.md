@@ -39,7 +39,7 @@ This application leverages cutting-edge AI models (like Google Gemini) to unders
 
 ## ✨ Key Features
 
-*   **AI-Powered README Generation**: Utilizes advanced AI (Google Gemini and potentially Claude) to create high-quality, professional README.md files.
+*   **AI-Powered README Generation**: Utilizes advanced AI (Google Gemini and potentially Claude) to create high-quality, professional README.md files, now with enhanced API reliability including automatic retries for rate limits.
 *   **GitHub Webhook Integration**: Automatically triggers README generation on every `push` event to your repository's default branch.
 *   **Pull Request Automation**: Drafts new READMEs or updates existing ones as pull requests, allowing for easy review and merging.
 *   **Intelligent Code Analysis**: Deeply analyzes file contents and directory structures to extract accurate dependencies, installation steps, and architectural insights.
@@ -264,6 +264,7 @@ gitscribe-ai-readme-generator/
 ├── render-start.sh          # Script for Render deployment
 ├── resources/               # Views, language files, assets
 ├── routes/                  # Web, API, and console routes
+├── scratch/                 # Temporary files and scripts for testing/development
 ├── sprint.md                # Sprint planning/notes
 ├── storage/                 # Application generated files
 ├── tests/                   # Automated tests

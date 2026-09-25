@@ -36,8 +36,7 @@ class GeminiService
         })->timeout(120)->withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
-            'HTTP-Referer' => 'http://localhost', // Required by OpenRouter
-        ])->post('https://openrouter.ai/api/v1/chat/completions', [
+        ])->post('https://api.groq.com/openai/v1/chat/completions', [
             'model' => 'openai/gpt-oss-20b',
             'messages' => [
                 ['role' => 'user', 'content' => $prompt]

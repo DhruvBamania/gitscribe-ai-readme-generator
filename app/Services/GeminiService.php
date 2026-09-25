@@ -3,23 +3,55 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Carbon\Carbon;
 
 class GeminiService
 {
     protected $apiKey;
-    protected $apiUrl;
 
     public function __construct()
     {
+        // Still using the same .env variable GEMINI_API_KEY, just put your Groq key there!
         $this->apiKey = config('services.gemini.key');
-        $this->apiUrl = config('services.gemini.url');
+    }
+
+    protected function sendGroqRequest($prompt)
+    {
+        // SAFETY MEASURE: Max 25 requests per minute globally to stay safely under Groq's 30 RPM limit
+        if (RateLimiter::tooManyAttempts('groq_api_limit', 25)) {
+            $seconds = RateLimiter::availableIn('groq_api_limit');
+            Log::warning("Groq Safety Limit Reached! Pausing execution for {$seconds} seconds to avoid ban.");
+            sleep($seconds + 1); // Automatically wait out the rate limit
+        }
+
+        RateLimiter::hit('groq_api_limit', 60); // 60 seconds decay
+
+        $response = Http::retry(3, 10000, function ($exception) {
+            return $exception->response && $exception->response->status() === 429;
+        })->timeout(120)->withHeaders([
+            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://api.groq.com/openai/v1/chat/completions', [
+            // Using Llama 3.3 70B Versatile for high speed, smart coding, and large context
+            'model' => 'llama-3.3-70b-versatile',
+            'messages' => [
+                ['role' => 'user', 'content' => $prompt]
+            ]
+        ]);
+
+        if ($response->successful()) {
+            return $response->json()['choices'][0]['message']['content'];
+        }
+
+        Log::error('Groq API Error: ' . $response->body());
+        return null;
     }
 
     public function generateReadme($repoName, $description, $language, $files = [], $fileContents = [])
     {
         $fileList = implode(', ', $files);
-
         $generationDate = now()->format('d-m-Y');
         $generationLocation = 'India';
 
@@ -53,23 +85,13 @@ class GeminiService
         
         CRITICAL: Output ONLY the raw Markdown code. Do not include any conversational filler before or after the code block.";
 
-        $response = Http::retry(3, 10000, function ($exception, $request) {
-            return $exception->response && $exception->response->status() === 429;
-        })->timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
-            'contents' => [
-                [
-                    'parts' => [
-                        ['text' => $prompt]
-                    ]
-                ]
-            ]
-        ]);
-
-        if ($response->successful()) {
-            return $response->json()['candidates'][0]['content']['parts'][0]['text'];
+        $text = $this->sendGroqRequest($prompt);
+        
+        if ($text) {
+            $text = preg_replace('/^```(?:markdown)?\s*/i', '', $text);
+            return preg_replace('/\s*```$/', '', $text);
         }
 
-        \Illuminate\Support\Facades\Log::error('Gemini API Error in generateReadme: ' . $response->body());
         return "Failed to generate README. Please try again.";
     }
 
@@ -90,20 +112,15 @@ class GeminiService
         ### FILE TREE ###
         {$fileTreeJson}";
 
-        $response = Http::retry(3, 10000, function ($exception, $request) {
-            return $exception->response && $exception->response->status() === 429;
-        })->timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
-            'contents' => [['parts' => [['text' => $prompt]]]]
-        ]);
+        $text = $this->sendGroqRequest($prompt);
 
-        if ($response->successful()) {
-            $text = preg_replace('/^```(?:json)?\s*/i', '', $response->json()['candidates'][0]['content']['parts'][0]['text']);
+        if ($text) {
+            $text = preg_replace('/^```(?:json)?\s*/i', '', $text);
             $text = preg_replace('/\s*```$/', '', $text);
             $decoded = json_decode($text, true);
             return is_array($decoded) ? $decoded : [];
         }
 
-        \Illuminate\Support\Facades\Log::error('Gemini API Error in planWikiArchitecture: ' . $response->body());
         return [];
     }
 
@@ -120,20 +137,15 @@ class GeminiService
         ### FILE TREE ###
         {$fileTreeJson}";
 
-        $response = Http::retry(3, 10000, function ($exception, $request) {
-            return $exception->response && $exception->response->status() === 429;
-        })->timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
-            'contents' => [['parts' => [['text' => $prompt]]]]
-        ]);
+        $text = $this->sendGroqRequest($prompt);
 
-        if ($response->successful()) {
-            $text = preg_replace('/^```(?:json)?\s*/i', '', $response->json()['candidates'][0]['content']['parts'][0]['text']);
+        if ($text) {
+            $text = preg_replace('/^```(?:json)?\s*/i', '', $text);
             $text = preg_replace('/\s*```$/', '', $text);
             $decoded = json_decode($text, true);
             return is_array($decoded) ? array_slice($decoded, 0, 3) : [];
         }
 
-        \Illuminate\Support\Facades\Log::error('Gemini API Error in pickFilesForWikiPage: ' . $response->body());
         return [];
     }
 
@@ -156,19 +168,13 @@ class GeminiService
         2. Do NOT wrap your response in ```markdown ... ``` blocks. Return ONLY the raw markdown text.
         3. Do not include conversational filler.";
 
-        $response = Http::retry(3, 10000, function ($exception, $request) {
-            return $exception->response && $exception->response->status() === 429;
-        })->timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
-            'contents' => [['parts' => [['text' => $prompt]]]]
-        ]);
+        $text = $this->sendGroqRequest($prompt);
 
-        if ($response->successful()) {
-            $text = $response->json()['candidates'][0]['content']['parts'][0]['text'];
+        if ($text) {
             $text = preg_replace('/^```(?:markdown)?\s*/i', '', $text);
             return preg_replace('/\s*```$/', '', $text);
         }
 
-        \Illuminate\Support\Facades\Log::error('Gemini API Error in writeWikiPage: ' . $response->body());
         return "# {$pageTopic}\n\nFailed to generate content.";
     }
 
@@ -189,30 +195,18 @@ class GeminiService
         ### FILE TREE ###
         {$fileTreeJson}";
 
-        $response = Http::retry(3, 10000, function ($exception, $request) {
-            return $exception->response && $exception->response->status() === 429;
-        })->timeout(60)->post($this->apiUrl . '?key=' . $this->apiKey, [
-            'contents' => [
-                [
-                    'parts' => [
-                        ['text' => $prompt]
-                    ]
-                ]
-            ]
-        ]);
+        $text = $this->sendGroqRequest($prompt);
 
-        if ($response->successful()) {
-            $text = $response->json()['candidates'][0]['content']['parts'][0]['text'];
+        if ($text) {
             $text = preg_replace('/^```(?:json)?\s*/i', '', $text);
             $text = preg_replace('/\s*```$/', '', $text);
             
             $decoded = json_decode($text, true);
             if (is_array($decoded)) {
-                return array_slice($decoded, 0, 5); // Ensure max 5
+                return array_slice($decoded, 0, 5);
             }
         }
 
-        \Illuminate\Support\Facades\Log::error('Gemini API Error in pickFilesToExplore: ' . $response->body());
         return [];
     }
 
@@ -243,27 +237,13 @@ class GeminiService
             
             $writerPrompt .= "\n\n### RECENT CODE CHANGES (DIFF) ###\n```diff\n{$diff}\n```";
 
-            $response = \Illuminate\Support\Facades\Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $writerPrompt]
-                        ]
-                    ]
-                ],
-                'generationConfig' => [
-                    'maxOutputTokens' => 8192
-                ]
-            ]);
-
-            if (!$response->successful()) {
-                $errorBody = $response->body();
-                \Illuminate\Support\Facades\Log::error('Gemini API Error in generateReadmeFromDiff Writer: ' . $errorBody);
-                throw new \Exception("Gemini API Error: " . $errorBody);
+            $draftResponse = $this->sendGroqRequest($writerPrompt);
+            if (!$draftResponse) {
+                if ($draft) return $draft; // Return previous draft if it fails
+                throw new \Exception("Groq API Error during Writer Phase.");
             }
 
-            $draft = $response->json()['candidates'][0]['content']['parts'][0]['text'];
-            
+            $draft = $draftResponse;
             $draft = preg_replace('/^```(?:markdown)?\s*/i', '', $draft);
             $draft = preg_replace('/\s*```$/', '', $draft);
 
@@ -287,22 +267,12 @@ class GeminiService
             ### DRAFT TO REVIEW ###
             {$draft}";
 
-            $reviewResponse = \Illuminate\Support\Facades\Http::timeout(120)->post($this->apiUrl . '?key=' . $this->apiKey, [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $reviewerPrompt]
-                        ]
-                    ]
-                ]
-            ]);
-
-            if (!$reviewResponse->successful()) {
-                \Illuminate\Support\Facades\Log::warning('Gemini API Error in Reviewer Phase: ' . $reviewResponse->body());
-                return $draft;
+            $reviewResult = $this->sendGroqRequest($reviewerPrompt);
+            if (!$reviewResult) {
+                return $draft; // If reviewer fails, just accept the draft
             }
 
-            $reviewResult = trim($reviewResponse->json()['candidates'][0]['content']['parts'][0]['text']);
+            $reviewResult = trim($reviewResult);
             
             if (strtoupper($reviewResult) === 'APPROVED' || strpos(strtoupper($reviewResult), 'APPROVED') !== false) {
                 return $draft;

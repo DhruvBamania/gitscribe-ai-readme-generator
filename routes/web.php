@@ -43,6 +43,13 @@ Route::get('/run-migrations-temp', function () {
     return 'Migrations ran successfully! Output: <br><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
 });
 
+Route::get('/clear-cache', function () {
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    return 'Cache cleared successfully! You can now test the API again.';
+});
+
 // GitHub Webhook Route (Exempt from CSRF in bootstrap/app.php)
 Route::post('/api/webhooks/github', [\App\Http\Controllers\WebhookController::class, 'handle'])
     ->middleware(\App\Http\Middleware\VerifyGithubWebhookSignature::class)

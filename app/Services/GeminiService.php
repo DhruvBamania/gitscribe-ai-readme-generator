@@ -13,8 +13,11 @@ class GeminiService
 
     public function __construct()
     {
-        // Still using the same .env variable GEMINI_API_KEY, just put your Groq key there!
         $this->apiKey = config('services.gemini.key');
+        
+        if (empty(trim($this->apiKey))) {
+            throw new \Exception('API Key is missing! Please make sure GEMINI_API_KEY is set in your .env file and run `php artisan config:clear`.');
+        }
     }
 
     protected function sendGroqRequest($prompt)

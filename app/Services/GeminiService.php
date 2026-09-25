@@ -33,9 +33,9 @@ class GeminiService
         })->timeout(120)->withHeaders([
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
-        ])->post('https://api.groq.com/openai/v1/chat/completions', [
-            // Using Llama 3.3 70B Versatile for high speed, smart coding, and large context
-            'model' => 'llama-3.3-70b-versatile',
+            'HTTP-Referer' => 'http://localhost', // Required by OpenRouter
+        ])->post('https://openrouter.ai/api/v1/chat/completions', [
+            'model' => 'openai/gpt-oss-20b',
             'messages' => [
                 ['role' => 'user', 'content' => $prompt]
             ]

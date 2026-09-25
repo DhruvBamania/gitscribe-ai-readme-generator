@@ -31,7 +31,7 @@
 
 `gitscribe-ai-readme-generator` is an innovative, AI-powered Laravel application designed to elevate your open-source projects and internal repositories with automatically generated, professional README files. By integrating directly with GitHub via webhooks, GitScribe intelligently analyzes your project's codebase on every push to the default branch, then drafts comprehensive READMEs as pull requests. Say goodbye to outdated or incomplete documentation – GitScribe ensures your project always presents its best face.
 
-This application leverages cutting-edge AI models (like Google Gemini) to understand your project's intent, dependencies, and structure, transforming raw code into polished, developer-friendly documentation that mirrors the quality of top-tier SaaS products.
+This application leverages cutting-edge AI models (Google Gemini and Groq’s LLaMA3‑8B) to understand your project's intent, dependencies, and structure, transforming raw code into polished, developer-friendly documentation that mirrors the quality of top-tier SaaS products.
 
 ![Project Preview](docs/preview.png)
 
@@ -39,8 +39,8 @@ This application leverages cutting-edge AI models (like Google Gemini) to unders
 
 ## ✨ Key Features
 
-*   **AI-Powered README Generation**: Utilizes advanced AI (Google Gemini and potentially Claude) to create high-quality, professional README.md files.
-*   **GitHub Webhook Integration**: Automatically triggers README generation on every `push` event to your repository's default branch.
+*   **AI-Powered README Generation**: Utilizes advanced AI (Google Gemini and Groq’s LLaMA3‑8B) to create high-quality, professional `README.md` files.
+*   **GitHub Webhook Integration**: Automatically triggers README generation on every `push` event to your repository’s default branch.
 *   **Pull Request Automation**: Drafts new READMEs or updates existing ones as pull requests, allowing for easy review and merging.
 *   **Intelligent Code Analysis**: Deeply analyzes file contents and directory structures to extract accurate dependencies, installation steps, and architectural insights.
 *   **Laravel Framework**: Built on the robust and expressive Laravel 12 framework, ensuring scalability and maintainability.
@@ -64,7 +64,7 @@ Ensure you have the following installed:
 *   **Git**: [Download Git](https://git-scm.com/downloads)
 *   **Database**: MySQL or PostgreSQL (e.g., via Docker or XAMPP/WAMP/MAMP)
 *   **GitHub Account**: For OAuth and repository integration.
-*   **AI API Key**: A Google Gemini API Key.
+*   **AI API Key**: A Google Gemini API Key or Groq API Key (used with the LLaMA3‑8B model).
 
 ### Installation
 
@@ -139,151 +139,13 @@ Open your newly created `.env` file and update the following variables:
     GITHUB_REDIRECT_URI=http://localhost:8000/auth/github/callback
     ```
 
-3.  **AI Service (Gemini) Key**:
-    Obtain a Google Gemini API Key from the Google AI Studio or Google Cloud.
+3.  **AI Service Key**:
+    *   For **Google Gemini**: Obtain a Google Gemini API Key from the Google AI Studio or Google Cloud.
 
     ```dotenv
     GEMINI_API_KEY=your_gemini_api_key
     ```
 
-4.  **GitHub Webhook Secret**:
-    Generate a random, strong secret for GitHub webhook verification.
+    *   For **Groq LLaMA3‑8B**: Obtain a Groq API Key from the Groq platform.
 
     ```dotenv
-    GITHUB_WEBHOOK_SECRET=your_strong_random_secret
-    ```
-
-### Running the Application
-
-1.  **Start the Laravel Development Server**:
-    ```bash
-    php artisan serve
-    ```
-
-2.  **Start the Queue Worker**:
-    AI generation can take time, so it's processed in the background.
-
-    ```bash
-    php artisan queue:work
-    ```
-
-3.  **Access the Application**:
-    Open your web browser and navigate to `http://localhost:8000`. Log in with your GitHub account to start managing your repositories and generating READMEs!
-
-### Docker (Optional)
-
-A `Dockerfile` is provided for containerized deployment, particularly for production environments like Render.com.
-
-To build and run with Docker locally:
-
-1.  **Build the Docker Image**:
-    ```bash
-    docker build -t gitscribe-ai .
-    ```
-
-2.  **Run the Docker Container**:
-    ```bash
-    docker run -p 80:80 -d --name gitscribe-app gitscribe-ai
-    ```
-
-    > Remember to configure your `.env` file for database connections that are accessible from within the Docker container, and adjust port mappings if necessary. The `Dockerfile` includes `pdo_mysql` and `pdo_pgsql` to support various database providers.
-
----
-
-## 💡 Usage
-
-After installation and configuration:
-
-1.  **Login with GitHub**: Access the application and authenticate using your GitHub account.
-2.  **Dashboard**: On the dashboard, you'll see a list of your repositories.
-3.  **Enable Webhooks**: For any repository you want GitScribe to manage, toggle the "Enable Webhook" option. This will create a GitHub webhook that notifies GitScribe on every `push` event.
-4.  **Push to Repository**: Make a code change and push it to the default branch of a webhook-enabled repository.
-5.  **Automated PR**: GitScribe will process the push, generate a new README.md (or update an existing one) using AI, and open a Pull Request in your repository with the proposed documentation.
-6.  **Review and Merge**: Review the generated README in GitHub, make any desired manual edits, and merge the PR.
-
-You can also manually trigger README generation for a specific repository from the dashboard.
-
----
-
-## 🛠️ Tech Stack
-
-`gitscribe-ai-readme-generator` is built on a modern and robust technology stack:
-
-*   **Backend**:
-    *   [PHP 8.2+](https://www.php.net/)
-    *   [Laravel 12](https://laravel.com/) - The core framework.
-    *   [Composer](https://getcomposer.org/) - PHP package manager.
-    *   [Laravel Socialite](https://laravel.com/docs/12.x/socialite) - GitHub OAuth authentication.
-    *   [Spatie Laravel Markdown](https://spatie.be/docs/laravel-markdown/v2/introduction) - Markdown parsing and rendering.
-    *   **AI Integration**:
-        *   Google Gemini API (via custom service)
-        *   (Future: Claude API, other LLMs)
-    *   **Database**: MySQL or PostgreSQL (configured via `.env`)
-
-*   **Frontend**:
-    *   [Vite 7.x](https://vitejs.dev/) - Frontend build tool.
-    *   [Tailwind CSS 4.x](https://tailwindcss.com/) - Utility-first CSS framework.
-    *   [Node.js & npm](https://nodejs.org/) - JavaScript runtime and package manager.
-
-*   **Infrastructure & Tools**:
-    *   [GitHub API](https://docs.github.com/en/rest) - For repository interaction, webhooks, and pull requests.
-    *   [Docker](https://www.docker.com/) - Containerization for easy deployment.
-    *   [Apache](https://httpd.apache.org/) - Web server (as configured in Dockerfile).
-
----
-
-## 📂 Project Structure
-
-A simplified overview of the key directories and files:
-
-```
-gitscribe-ai-readme-generator/
-├── .agents/                 # AI agent configuration/prompt files
-├── .env.example             # Example environment variables
-├── AGENTS.md                # Documentation on AI agents
-├── AI_DEVELOPMENT_GUIDE.md  # Guide for developing AI features
-├── CLAUDE.md                # Notes on Claude AI integration
-├── Dockerfile               # Docker build instructions
-├── LICENSE                  # Project license file (MIT)
-├── README.md                # This README file
-├── app/                     # Laravel application source code
-│   ├── Http/                # HTTP controllers and middleware
-│   │   ├── Controllers/     # Application logic
-│   │   └── Middleware/      # Custom middleware (e.g., webhook verification)
-│   ├── Jobs/                # Queueable jobs for background processing (e.g., AI generation)
-│   ├── Models/              # Eloquent models
-│   └── Services/            # Service classes for external APIs (GitHub, Gemini)
-├── artisan                  # Laravel command-line interface
-├── bootstrap/               # Framework bootstrapping
-├── composer.json            # PHP dependencies and scripts
-├── config/                  # Configuration files
-├── database/                # Database migrations, seeders, factories
-├── docs/                    # Additional documentation (e.g., project preview)
-├── package.json             # Node.js dependencies and scripts
-├── public/                  # Publicly accessible files
-├── render-start.sh          # Script for Render deployment
-├── resources/               # Views, language files, assets
-├── routes/                  # Web, API, and console routes
-├── sprint.md                # Sprint planning/notes
-├── storage/                 # Application generated files
-├── tests/                   # Automated tests
-└── vite.config.js           # Vite configuration for asset bundling
-```
-
----
-
-## 🤝 Contributing
-
-We welcome contributions to `gitscribe-ai-readme-generator`! Whether it's bug reports, feature requests, or pull requests, your help makes this project better.
-
-Please refer to `AI_DEVELOPMENT_GUIDE.md` and `sprint.md` for more details on contributing to the AI components and project roadmap.
-
----
-
-## 📜 License
-
-This project is open-source software licensed under the [MIT license](LICENSE).
-
----
-
-*Documentation automatically generated by GitScribe on 24-09-2026 (India).*

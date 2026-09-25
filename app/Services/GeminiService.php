@@ -37,7 +37,7 @@ class GeminiService
             'Authorization' => 'Bearer ' . $this->apiKey,
             'Content-Type' => 'application/json',
         ])->post('https://api.groq.com/openai/v1/chat/completions', [
-            'model' => 'openai/gpt-oss-20b',
+            'model' => 'llama3-8b-8192',
             'messages' => [
                 ['role' => 'user', 'content' => $prompt]
             ]
